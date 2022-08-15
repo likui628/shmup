@@ -1,6 +1,9 @@
 # Pygame template - skeleton for a new pygame project
 import pygame
 import random
+from os import path
+
+img_dir = path.join(path.dirname(__file__), 'img')
 
 WIDTH = 360
 HEIGHT = 480
@@ -25,8 +28,9 @@ clock = pygame.time.Clock()
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((50, 40))
-        self.image.fill(BLUE)
+        self.image = pygame.transform.scale(player_img, (50, 37))
+        self.image.set_colorkey(BLACK)
+
         self.rect = self.image.get_rect()
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
@@ -55,8 +59,9 @@ class Player(pygame.sprite.Sprite):
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((random.randrange(20, 40), random.randrange(20, 40)))
-        self.image.fill(RED)
+        self.image = mob_img
+        self.image.set_colorkey(BLACK)
+
         self.rect = self.image.get_rect()
         self.rect.x = random.randrange(0, WIDTH - self.rect.width)
         self.rect.bottom = random.randrange(-100, -40)
@@ -76,8 +81,9 @@ class Mob(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((10, 20))
-        self.image.fill(YELLOW)
+        self.image = bullet_img
+        self.image.set_colorkey(BLACK)
+
         self.rect = self.image.get_rect()
         self.rect.centerx = x
         self.rect.bottom = y
@@ -88,6 +94,14 @@ class Bullet(pygame.sprite.Sprite):
         if self.rect.bottom < 0:
             self.kill()
 
+
+# load all game graphics
+background = pygame.image.load(path.join(img_dir, 'starfield-1.jpg')).convert()
+background_rect = background.get_rect()
+
+player_img = pygame.image.load(path.join(img_dir, 'playerShip1_orange.png')).convert()
+mob_img = pygame.image.load(path.join(img_dir, 'meteorBrown_med1.png')).convert()
+bullet_img = pygame.image.load(path.join(img_dir, 'laserRed16.png')).convert()
 
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
@@ -130,7 +144,8 @@ while running:
         running = False
 
     # Draw / render
-    screen.fill(BLACK)
+    screen.fill(WHITE)
+    screen.blit(background, background_rect)
     all_sprites.draw(screen)
     # *after* drawing everything, flip the display
     pygame.display.flip()
