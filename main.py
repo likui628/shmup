@@ -30,8 +30,9 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.transform.scale(player_img, (50, 37))
         self.image.set_colorkey(BLACK)
-
         self.rect = self.image.get_rect()
+
+        self.radius = 19
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
         self.speedx = 0
@@ -61,8 +62,9 @@ class Mob(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = mob_img
         self.image.set_colorkey(BLACK)
-
         self.rect = self.image.get_rect()
+
+        self.radius = int(self.rect.width / 2 * 0.85)
         self.rect.x = random.randrange(0, WIDTH - self.rect.width)
         self.rect.bottom = random.randrange(-100, -40)
         self.speedx = random.randrange(-3, 3)
@@ -139,7 +141,7 @@ while running:
         all_sprites.add(mob)
         mobs.add(mob)
 
-    hits = pygame.sprite.spritecollide(player, mobs, False)
+    hits = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_circle)
     if hits:
         running = False
 
