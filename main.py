@@ -17,12 +17,22 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 
+text_font = pygame.font.match_font('arial')
+
 # initialize pygame and create window
 pygame.init()
 pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Shmup!")
 clock = pygame.time.Clock()
+
+
+def draw_text(surface, text, size, x, y):
+    font = pygame.font.Font(text_font, size)
+    text_surface = font.render(text, True, WHITE)
+    rect = text_surface.get_rect()
+    rect.midtop = (x, y)
+    surface.blit(text_surface, rect)
 
 
 class Player(pygame.sprite.Sprite):
@@ -138,6 +148,8 @@ bullets = pygame.sprite.Group()
 player = Player()
 all_sprites.add(player)
 
+score = 0
+
 for i in range(0, 8):
     mob = Mob()
     all_sprites.add(mob)
@@ -163,6 +175,7 @@ while running:
     # collide detection
     hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
     for hit in hits:
+        score += (50 - hit.radius)
         mob = Mob()
         all_sprites.add(mob)
         mobs.add(mob)
@@ -175,6 +188,7 @@ while running:
     screen.fill(WHITE)
     screen.blit(background, background_rect)
     all_sprites.draw(screen)
+    draw_text(screen, 'score: ' + str(score), 20, WIDTH / 2, 10)
     # *after* drawing everything, flip the display
     pygame.display.flip()
 
