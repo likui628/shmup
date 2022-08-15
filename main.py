@@ -60,20 +60,39 @@ class Player(pygame.sprite.Sprite):
 class Mob(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = mob_img
+        self.image_origin = random.choice(mob_img_list)
+        self.image_origin.set_colorkey(BLACK)
+
+        self.image = self.image_origin.copy()
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
 
         self.radius = int(self.rect.width / 2 * 0.85)
         self.rect.x = random.randrange(0, WIDTH - self.rect.width)
-        self.rect.bottom = random.randrange(-100, -40)
+        self.rect.bottom = random.randrange(-140, -100)
         self.speedx = random.randrange(-3, 3)
         self.speedy = random.randrange(1, 8)
 
+        self.rot = 0
+        self.rot_speed = random.randrange(-10, 10)
+        self.last_update = pygame.time.get_ticks()
+
+    def rotate(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 50:
+            self.last_update = now
+            self.rot = (self.rot + self.rot_speed) % 360
+            new_image = pygame.transform.rotate(self.image_origin, self.rot)
+            old_center = self.rect.center
+            self.image = new_image
+            self.rect = new_image.get_rect()
+            self.rect.center = old_center
+
     def update(self):
+        self.rotate()
         self.rect.x += self.speedx
         self.rect.y += self.speedy
-        if self.rect.left < 0 or self.rect.right > WIDTH or self.rect.top > HEIGHT:
+        if self.rect.right <= 0 or self.rect.left >= WIDTH or self.rect.top > HEIGHT:
             self.rect.x = random.randrange(0, WIDTH - self.image.get_width())
             self.rect.bottom = random.randrange(-100, -40)
             self.speedx = random.randrange(-3, 3)
@@ -102,8 +121,15 @@ background = pygame.image.load(path.join(img_dir, 'starfield-1.jpg')).convert()
 background_rect = background.get_rect()
 
 player_img = pygame.image.load(path.join(img_dir, 'playerShip1_orange.png')).convert()
-mob_img = pygame.image.load(path.join(img_dir, 'meteorBrown_med1.png')).convert()
 bullet_img = pygame.image.load(path.join(img_dir, 'laserRed16.png')).convert()
+mob_img_list = []
+image_list = [
+    'meteorBrown_big1.png', 'meteorBrown_big2.png', 'meteorBrown_big3.png',
+    'meteorBrown_big4.png', 'meteorBrown_med1.png', 'meteorBrown_med3.png',
+    'meteorBrown_small1.png', 'meteorBrown_small2.png', 'meteorBrown_tiny1.png',
+    'meteorBrown_tiny2.png']
+for img in image_list:
+    mob_img_list.append(pygame.image.load(path.join(img_dir, img)).convert())
 
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
