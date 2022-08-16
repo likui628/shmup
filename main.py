@@ -4,6 +4,7 @@ import random
 from os import path
 
 img_dir = path.join(path.dirname(__file__), 'img')
+snd_dir = path.join(path.dirname(__file__), 'snd')
 
 WIDTH = 360
 HEIGHT = 480
@@ -65,6 +66,7 @@ class Player(pygame.sprite.Sprite):
         bullet = Bullet(self.rect.centerx, self.rect.top)
         all_sprites.add(bullet)
         bullets.add(bullet)
+        pew_sound.play()
 
 
 class Mob(pygame.sprite.Sprite):
@@ -141,6 +143,14 @@ image_list = [
 for img in image_list:
     mob_img_list.append(pygame.image.load(path.join(img_dir, img)).convert())
 
+# load all sounds
+pew_sound = pygame.mixer.Sound(path.join(snd_dir, 'pew.wav'))
+expl_sounds = []
+for snd in ['expl3.wav', 'expl6.wav']:
+    expl_sounds.append(pygame.mixer.Sound(path.join(snd_dir, snd)))
+pygame.mixer.music.load(path.join(snd_dir, 'tgfcoder-FrozenJam-SeamlessLoop.ogg'))
+pygame.mixer.music.set_volume(0.4)
+
 all_sprites = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
@@ -148,14 +158,14 @@ bullets = pygame.sprite.Group()
 player = Player()
 all_sprites.add(player)
 
-score = 0
-
 for i in range(0, 8):
     mob = Mob()
     all_sprites.add(mob)
     mobs.add(mob)
 
 # Game loop
+score = 0
+pygame.mixer.music.play()
 running = True
 while running:
     # keep loop running at the right speed
@@ -176,6 +186,7 @@ while running:
     hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
     for hit in hits:
         score += (50 - hit.radius)
+        random.choice(expl_sounds).play()
         mob = Mob()
         all_sprites.add(mob)
         mobs.add(mob)
