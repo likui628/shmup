@@ -36,6 +36,23 @@ def draw_text(surface, text, size, x, y):
     surface.blit(text_surface, rect)
 
 
+def draw_shield_bar(surface, x, y, pec):
+    if pec < 0:
+        pec = 0
+    BAR_LENGTH = 100
+    BAR_HEIGHT = 10
+    outline_rect = pygame.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
+    fill_rect = pygame.Rect(x, y, BAR_LENGTH * (pec / 100), BAR_HEIGHT)
+    pygame.draw.rect(surface, GREEN, fill_rect)
+    pygame.draw.rect(surface, WHITE, outline_rect, 2)
+
+
+def add_mob():
+    mob = Mob()
+    all_sprites.add(mob)
+    mobs.add(mob)
+
+
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -47,6 +64,8 @@ class Player(pygame.sprite.Sprite):
         self.rect.centerx = WIDTH / 2
         self.rect.bottom = HEIGHT - 10
         self.speedx = 0
+
+        self.shield = 100
 
     def update(self):
         self.speedx = 0
@@ -159,9 +178,7 @@ player = Player()
 all_sprites.add(player)
 
 for i in range(0, 8):
-    mob = Mob()
-    all_sprites.add(mob)
-    mobs.add(mob)
+    add_mob()
 
 # Game loop
 score = 0
@@ -187,19 +204,21 @@ while running:
     for hit in hits:
         score += (50 - hit.radius)
         random.choice(expl_sounds).play()
-        mob = Mob()
-        all_sprites.add(mob)
-        mobs.add(mob)
+        add_mob()
 
-    hits = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_circle)
-    if hits:
-        running = False
+    hits = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_circle)
+    for hit in hits:
+        player.shield -= hit.radius
+        add_mob()
+        if player.shield <= 0:
+            running = False
 
     # Draw / render
     screen.fill(WHITE)
     screen.blit(background, background_rect)
     all_sprites.draw(screen)
     draw_text(screen, 'score: ' + str(score), 20, WIDTH / 2, 10)
+    draw_shield_bar(screen, 10, 15, player.shield)
     # *after* drawing everything, flip the display
     pygame.display.flip()
 
