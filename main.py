@@ -147,6 +147,31 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
 
 
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, center, size):
+        pygame.sprite.Sprite.__init__(self)
+        self.size = size
+        self.image = expl_dict[self.size][0]
+        self.rect = self.image.get_rect()
+        self.rect.center = center
+        self.last_update = pygame.time.get_ticks()
+        self.frame = 0;
+        self.frame_rate = 75
+
+    def update(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.frame_rate:
+            self.last_update = now
+            self.frame += 1
+            if self.frame == len(expl_dict[self.size]):
+                self.kill()
+            else:
+                center = self.rect.center
+                self.image = expl_dict[self.size][self.frame]
+                self.rect = self.image.get_rect()
+                self.rect.center = center
+
+
 # load all game graphics
 background = pygame.image.load(path.join(img_dir, 'starfield-1.jpg')).convert()
 background_rect = background.get_rect()
@@ -161,6 +186,14 @@ image_list = [
     'meteorBrown_tiny2.png']
 for img in image_list:
     mob_img_list.append(pygame.image.load(path.join(img_dir, img)).convert())
+
+# load explosion graphics
+expl_dict = {'lg': [], 'sm': []}
+for i in range(9):
+    img = pygame.image.load(path.join(img_dir, 'regularExplosion0{}.png'.format(i))).convert()
+    img.set_colorkey(BLACK)
+    expl_dict['lg'].append(pygame.transform.scale(img, (75, 75)))
+    expl_dict['sm'].append(pygame.transform.scale(img, (35, 35)))
 
 # load all sounds
 pew_sound = pygame.mixer.Sound(path.join(snd_dir, 'pew.wav'))
@@ -204,11 +237,15 @@ while running:
     for hit in hits:
         score += (50 - hit.radius)
         random.choice(expl_sounds).play()
+        expl = Explosion(hit.rect.center, 'lg')
+        all_sprites.add(expl)
         add_mob()
 
     hits = pygame.sprite.spritecollide(player, mobs, True, pygame.sprite.collide_circle)
     for hit in hits:
         player.shield -= hit.radius
+        expl = Explosion(hit.rect.center, 'sm')
+        all_sprites.add(expl)
         add_mob()
         if player.shield <= 0:
             running = False
