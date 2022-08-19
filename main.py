@@ -155,7 +155,7 @@ class Explosion(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = center
         self.last_update = pygame.time.get_ticks()
-        self.frame = 0;
+        self.frame = 0
         self.frame_rate = 75
 
     def update(self):
@@ -188,12 +188,16 @@ for img in image_list:
     mob_img_list.append(pygame.image.load(path.join(img_dir, img)).convert())
 
 # load explosion graphics
-expl_dict = {'lg': [], 'sm': []}
+expl_dict = {'lg': [], 'sm': [], 'player': []}
 for i in range(9):
     img = pygame.image.load(path.join(img_dir, 'regularExplosion0{}.png'.format(i))).convert()
     img.set_colorkey(BLACK)
     expl_dict['lg'].append(pygame.transform.scale(img, (75, 75)))
     expl_dict['sm'].append(pygame.transform.scale(img, (35, 35)))
+
+    img = pygame.image.load(path.join(img_dir, 'sonicExplosion0{}.png'.format(i))).convert()
+    img.set_colorkey(BLACK)
+    expl_dict['player'].append(pygame.transform.scale(img, (75, 75)))
 
 # load all sounds
 pew_sound = pygame.mixer.Sound(path.join(snd_dir, 'pew.wav'))
@@ -248,7 +252,12 @@ while running:
         all_sprites.add(expl)
         add_mob()
         if player.shield <= 0:
-            running = False
+            death_expl = Explosion(player.rect.center, 'player')
+            all_sprites.add(death_expl)
+            player.kill()
+    # Name 'death_expl' can be undefined, how to fix it?
+    if not player.alive() and not death_expl.alive():
+        running = False
 
     # Draw / render
     screen.fill(WHITE)
