@@ -237,6 +237,24 @@ class Explosion(pygame.sprite.Sprite):
                 self.rect.center = center
 
 
+def show_game_over():
+    waiting = True
+    while waiting:
+        clock.tick(FPS)
+        screen.blit(background, background_rect)
+
+        draw_text(screen, "Shmup", 64, WIDTH / 2, 75)
+        draw_text(screen, "press any key to continue ...", 20, WIDTH / 2, 230)
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+            elif e.type == pygame.KEYUP:
+                waiting = False
+
+        pygame.display.flip()
+
+
 # load all game graphics
 background = pygame.image.load(path.join(img_dir, 'starfield-1.jpg')).convert()
 background_rect = background.get_rect()
@@ -287,17 +305,25 @@ pows = pygame.sprite.Group()
 mobs = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 
-player = Player()
-all_sprites.add(player)
-
-for i in range(0, 8):
-    add_mob()
-
 # Game loop
 score = 0
-pygame.mixer.music.play()
+pygame.mixer.music.play(-1)
+
 running = True
+game_over = True
 while running:
+    if game_over:
+        show_game_over()
+
+        # init game status
+        game_over = False
+        player = Player()
+        all_sprites.add(player)
+        score = 0
+
+        for i in range(0, 8):
+            add_mob()
+
     # keep loop running at the right speed
     clock.tick(FPS)
     # Process input (events)
@@ -350,7 +376,7 @@ while running:
 
     # Name 'death_expl' can be undefined, how to fix it?
     if player.lives == 0 and not death_expl.alive():
-        running = False
+        game_over = True
 
     # Draw / render
     screen.fill(WHITE)
